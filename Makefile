@@ -18,7 +18,7 @@ setup:
 	sleep 20
 
 run:
-	cd sim && ../$(PYTHON) -m sim.run \
+	cd sim && echo "n" | ../$(PYTHON) -m sim.run \
 		--episodes $(EPISODES) \
 		--config   config/env.yml \
 		single --recommender remote --seed $(SEED)
