@@ -1,15 +1,7 @@
 """
 check_structure.py — проверяет Makefile и наличие analyze_ab.py.
-
-Проверяет:
-  1. Makefile существует
-  2. Есть таргеты setup / run / clean
-  3. Есть переменные SEED / EPISODES / DATA_DIR через ?=
-  4. В run вызывается analyze_ab.py с --data и --output
-  5. analyze_ab.py существует в репо
-
-Использование: python check_structure.py <path_to_repo>
 """
+import re
 import sys
 from pathlib import Path
 
@@ -29,16 +21,16 @@ def check(repo_path: str) -> bool:
     content = mf.read_text(encoding="utf-8", errors="ignore")
 
     for t in REQUIRED_TARGETS:
-        if f"{t}:" in content:
+        if re.search(rf"^{t}\s*:", content, re.MULTILINE):
             print(f"✅ Таргет '{t}'")
         else:
             print(f"❌ Таргет '{t}' не найден")
             ok = False
 
     for v in REQUIRED_VARIABLES:
-        if f"{v} ?=" in content or f"{v}?=" in content:
+        if re.search(rf"^{v}\s*\?=", content, re.MULTILINE):
             print(f"✅ Переменная '{v}' (?=)")
-        elif f"{v}=" in content:
+        elif re.search(rf"^{v}\s*=", content, re.MULTILINE):
             print(f"⚠️  '{v}' есть, но без ?= — проверяющий не сможет переопределить")
         else:
             print(f"❌ Переменная '{v}' не найдена")
