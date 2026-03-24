@@ -75,7 +75,6 @@ class Experiments:
     ALL = Experiment("ALL", Split.EIGHT_WAY)
     DIVERSITY = Experiment("DIVERSITY", Split.THREE_WAY)
     DEBIAS = Experiment("DEBIAS", Split.HALF_HALF)
-    MYREC_VS_STICKY = Experiment("MYREC_VS_STICKY", Split.HALF_HALF)
 
     def __init__(self):
-        self.experiments = [Experiments.MYREC_VS_STICKY]
+        self.experiments = [Experiments.DEBIAS]
