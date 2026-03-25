@@ -16,7 +16,6 @@ class MyRecommender(Recommender):
         self.fallback             = fallback
 
     def _load_history(self, user: int) -> List[int]:
-        """Возвращает список недавно прослушанных track_id."""
         key  = f"user:{user}:listens"
         raws = self.listen_history_redis.lrange(key, 0, HISTORY_LIMIT - 1)
         seen = []
@@ -26,7 +25,6 @@ class MyRecommender(Recommender):
         return seen
 
     def _lfm_recommendations(self, user: int) -> List[int]:
-        """Персональные рекомендации из LightFM по user_id."""
         data = self.lfm_redis.get(user)
         if data is None:
             return []
@@ -38,12 +36,11 @@ class MyRecommender(Recommender):
         if not recs:
             return self.fallback.recommend_next(user, prev_track, prev_track_time)
 
-        # Исключаем недавно прослушанные
         seen = set(self._load_history(user))
         candidates = [t for t in recs if t not in seen]
 
         if not candidates:
-            candidates = recs  # все уже слышали — рекомендуем заново
+            candidates = recs
 
         if prev_track_time < LIKE_THRESHOLD:
             # трек не понравился — случайный из рекомендаций
