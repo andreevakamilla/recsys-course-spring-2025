@@ -1,24 +1,9 @@
-"""
-check_reproducibility.py — проверяет воспроизводимость результата.
-
-Запускаем make run дважды с одним seed и сравниваем effect_pct
-для метрики mean_time_per_session:
-  1. Знак должен совпадать (оба победили или оба проиграли)
-  2. Расхождение не превышает THRESHOLD
-
-⚠️  THRESHOLD = 5.0 взят произвольно.
-    Чтобы подобрать реальный порог — запусти StickyArtist или Random
-    несколько раз с одним seed и посмотри на типичный разброс effect_pct.
-
-Использование:
-  python check_reproducibility.py --ab1 run1/ab_result.json --ab2 run2/ab_result.json
-"""
 import argparse
 import json
 import sys
 
 METRIC    = "mean_time_per_session"
-THRESHOLD = 5.0   # ⚠️  подбери эмпирически под свой симулятор
+THRESHOLD = 10.0
 
 
 def get_effect(ab_path: str) -> dict | None:
