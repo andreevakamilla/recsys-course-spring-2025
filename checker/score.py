@@ -1,11 +1,3 @@
-"""
-score.py — считает итоговый балл за ДЗ2.
-
-Читает all_effects из ab_result.json, определяет победил ли студент
-по метрике mean_time_per_session (effect_pct > 0 и significant = True).
-
-Формула: 35 * 0.95^(1 + d) * 0.95^k
-"""
 import argparse
 import json
 import os
@@ -49,7 +41,6 @@ def main():
     parser.add_argument("--pr-url",    required=True)
     parser.add_argument("--deadline",  required=True)
     parser.add_argument("--ab-result", required=True)
-    parser.add_argument("--k",         type=int, default=0)
     parser.add_argument("--token",     default=os.getenv("GITHUB_TOKEN", ""))
     args = parser.parse_args()
 
@@ -66,7 +57,7 @@ def main():
         print(f"❌ Метрика '{METRIC}' не найдена в all_effects")
         sys.exit(1)
 
-    beat       = float(key["effect_pct"]) > 0
+    beat        = float(key["effect_pct"]) > 0
     significant = bool(key.get("significant", False))
     effect_pct  = float(key["effect_pct"])
 
@@ -81,9 +72,9 @@ def main():
         sys.exit(1)
 
     d       = deadline_days(submit_time, deadline)
-    penalty = (0.95 ** (1 + d)) * (0.95 ** args.k)
+    penalty = 0.95 ** (1 + d)
     score   = round(MAX_SCORE * penalty, 2) if beat else 0.0
-    formula = f"35 × 0.95^(1+{d}) × 0.95^{args.k} = {score:.2f}"
+    formula = f"35 × 0.95^(1+{d}) = {score:.2f}"
 
     print(f"""
 ╔══════════════════════════════════════════╗
@@ -95,21 +86,25 @@ def main():
 ║    Победил контроль: {"✅ Да" if beat else "❌ Нет":<22}║
 ╠══════════════════════════════════════════╣
 ║  Дедлайн (d): {"вовремя" if d==-1 else f"+{d} сут.":<28}║
-║  Плагиат (k): {args.k:<28}║
 ║  Множитель:   {penalty:<28.4f}║
 ╠══════════════════════════════════════════╣
 ║  БАЛЛ: {score:.1f} / {MAX_SCORE:<34}║
 ║  {formula:<42}║
+║  ⚠️  Плагиат (k) проверяется вручную      ║
 ╚══════════════════════════════════════════╝
 """)
 
     result = {
-        "score": score, "max_score": MAX_SCORE, "formula": formula,
-        "beat_control": beat, "significant": significant,
-        "effect_pct": effect_pct, "d": d, "k": args.k,
-        "penalty": round(penalty, 6),
-        "submit_time": submit_time.isoformat(),
-        "deadline": deadline.isoformat(),
+        "score":        score,
+        "max_score":    MAX_SCORE,
+        "formula":      formula,
+        "beat_control": beat,
+        "significant":  significant,
+        "effect_pct":   effect_pct,
+        "d":            d,
+        "penalty":      round(penalty, 6),
+        "submit_time":  submit_time.isoformat(),
+        "deadline":     deadline.isoformat(),
     }
     with open("score_result.json", "w") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
