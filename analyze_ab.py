@@ -1,15 +1,3 @@
-"""
-analyze_ab.py — A/B анализ эксперимента WEIGHTED_HISTORY.
-Портировано из семинарного ноутбука.
-
-Контракт для пайплайна:
-  - принимает --data и --output
-  - создаёт JSON с полем all_effects
-
-Использование:
-  python analyze_ab.py --data ./data/run1 --output ./data/run1/ab_result.json
-"""
-
 import argparse
 import glob
 import json
