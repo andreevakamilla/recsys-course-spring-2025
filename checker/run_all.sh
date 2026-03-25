@@ -1,28 +1,8 @@
 #!/bin/bash
-# =============================================================================
-# run_all.sh — проверка ДЗ2
-#
-# Пайплайн:
-#   [1] Проверяет Makefile + наличие analyze_ab.py
-#   [2] make setup + make run  →  проверяет exit code и ab_result.json
-#   [3] make run повторно      →  проверяет воспроизводимость (beat_control)
-#   [4] score.py               →  GitHub API + дедлайн = балл
-#
-# Использование:
-#   ./checker/run_all.sh \
-#     --repo     /path/to/student/repo \
-#     --pr       https://github.com/org/repo/pull/42 \
-#     --deadline "2025-06-01T23:59:00+03:00" \
-#     [--seed 31312] \
-#     [--episodes 1000] \
-#     [--k 0] \
-#     [--token ghp_xxx]
-# =============================================================================
-
 set -euo pipefail
 
 REPO=""; PR_URL=""; DEADLINE=""
-SEED=31312; EPISODES=1000; K=0
+SEED=31312; EPISODES=30000; K=0
 TOKEN="${GITHUB_TOKEN:-}"
 CHECKER_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -63,7 +43,7 @@ pip install requests -q
 # =============================================================================
 log "══ [1/4] Makefile ══════════════════════"
 python "$CHECKER_DIR/check_structure.py" "$REPO" 2>&1 | tee -a "$LOG" \
-  || { log "❌ Стоп — исправь Makefile"; exit 1; }
+  || { log "Стоп — исправь Makefile"; exit 1; }
 
 # =============================================================================
 # [2] Первый запуск
@@ -78,24 +58,23 @@ AB1="$DATA_DIR/run1/ab_result.json"
 
 if make run SEED="$SEED" EPISODES="$EPISODES" DATA_DIR="$DATA_DIR/run1" 2>&1 | tee -a "$LOG"; then
 
-  # Проверяем наличие и формат ab_result.json
   if [[ -f "$AB1" ]]; then
     python3 -c "
 import json, sys
 r = json.load(open('$AB1'))
 if 'beat_control' not in r:
-    print('❌ ab_result.json: отсутствует поле beat_control')
+    print('ab_result.json: отсутствует поле beat_control')
     sys.exit(1)
-print(f'✅ ab_result.json OK  beat_control={r[\"beat_control\"]}')
+print(f'ab_result.json OK  beat_control={r[\"beat_control\"]}')
 if 'lift_pct' in r and r['lift_pct'] is not None:
     print(f'   lift_pct={r[\"lift_pct\"]:+.2f}%  significant={r.get(\"significant\")}')
 " 2>&1 | tee -a "$LOG" || ((FAIL++))
   else
-    log "❌ ab_result.json не создан — analyze_ab.py не отработал или DATA_DIR неверный"
+    log "ab_result.json не создан — analyze_ab.py не отработал или DATA_DIR неверный"
     ((FAIL++))
   fi
 else
-  log "❌ make run завершился с ошибкой"
+  log "make run завершился с ошибкой"
   ((FAIL++))
 fi
 
@@ -117,11 +96,11 @@ if make run SEED="$SEED" EPISODES="$EPISODES" DATA_DIR="$DATA_DIR/run2" 2>&1 | t
       --ab1 "$AB1" --ab2 "$AB2" --output "$REPRO" \
       2>&1 | tee -a "$LOG" || ((FAIL++))
   else
-    log "❌ Один из ab_result.json не найден"
+    log "Один из ab_result.json не найден"
     ((FAIL++))
   fi
 else
-  log "❌ Второй make run завершился с ошибкой"
+  log "Второй make run завершился с ошибкой"
   ((FAIL++))
 fi
 
@@ -145,7 +124,7 @@ log "═════════════════════════
 [[ -f "$RESULTS_DIR/score_result.json" ]] && python3 -c "
 import json
 r = json.load(open('$RESULTS_DIR/score_result.json'))
-beat = '✅ Победил' if r.get('beat_control') else '❌ Не победил'
+beat = 'Победил' if r.get('beat_control') else 'Не победил'
 sig  = '(значимо)' if r.get('significant') else '(незначимо)'
 lift = f\"{r['lift_pct']:+.2f}%\" if r.get('lift_pct') is not None else 'N/A'
 print(f'  {beat} контроль {sig},  lift={lift}')
