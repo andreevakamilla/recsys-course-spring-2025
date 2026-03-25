@@ -1,6 +1,3 @@
-"""
-check_structure.py — проверяет Makefile и наличие analyze_ab.py.
-"""
 import re
 import sys
 from pathlib import Path
@@ -15,37 +12,37 @@ def check(repo_path: str) -> bool:
     ok   = True
 
     if not mf.exists():
-        print("❌ Makefile не найден в корне репо")
+        print(" Makefile не найден в корне репо")
         return False
 
     content = mf.read_text(encoding="utf-8", errors="ignore")
 
     for t in REQUIRED_TARGETS:
         if re.search(rf"^{t}\s*:", content, re.MULTILINE):
-            print(f"✅ Таргет '{t}'")
+            print(f"Таргет '{t}'")
         else:
-            print(f"❌ Таргет '{t}' не найден")
+            print(f"Таргет '{t}' не найден")
             ok = False
 
     for v in REQUIRED_VARIABLES:
         if re.search(rf"^{v}\s*\?=", content, re.MULTILINE):
-            print(f"✅ Переменная '{v}' (?=)")
+            print(f"Переменная '{v}' (?=)")
         elif re.search(rf"^{v}\s*=", content, re.MULTILINE):
-            print(f"⚠️  '{v}' есть, но без ?= — проверяющий не сможет переопределить")
+            print(f"'{v}' есть, но без ?= — проверяющий не сможет переопределить")
         else:
-            print(f"❌ Переменная '{v}' не найдена")
+            print(f"Переменная '{v}' не найдена")
             ok = False
 
     if "analyze_ab.py" in content and "--data" in content and "--output" in content:
-        print("✅ analyze_ab.py вызывается в make run")
+        print("analyze_ab.py вызывается в make run")
     else:
-        print("❌ В make run не найден вызов: analyze_ab.py --data ... --output ...")
+        print("В make run не найден вызов: analyze_ab.py --data ... --output ...")
         ok = False
 
     if (repo / "analyze_ab.py").exists():
-        print("✅ analyze_ab.py найден в репо")
+        print("analyze_ab.py найден в репо")
     else:
-        print("❌ analyze_ab.py не найден в корне репо")
+        print("analyze_ab.py не найден в корне репо")
         ok = False
 
     return ok
