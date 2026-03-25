@@ -10,7 +10,7 @@ try:
 except ImportError:
     requests = None
 
-MAX_SCORE = 35.0
+MAX_SCORE = 28.0
 METRIC    = "mean_time_per_session"
 
 
@@ -46,7 +46,7 @@ def main():
 
     ab_path = Path(args.ab_result)
     if not ab_path.exists():
-        print(f"❌ ab_result.json не найден: {ab_path}")
+        print(f"ab_result.json не найден: {ab_path}")
         sys.exit(1)
 
     ab      = json.load(open(ab_path))
@@ -54,7 +54,7 @@ def main():
     key     = next((e for e in effects if e["metric"] == METRIC), None)
 
     if key is None:
-        print(f"❌ Метрика '{METRIC}' не найдена в all_effects")
+        print(f"Метрика '{METRIC}' не найдена в all_effects")
         sys.exit(1)
 
     beat        = float(key["effect_pct"]) > 0
@@ -68,13 +68,13 @@ def main():
         print(f"   Коммит:  {submit_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
         print(f"   Дедлайн: {deadline.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     except Exception as e:
-        print(f"❌ GitHub API: {e}")
+        print(f"GitHub API: {e}")
         sys.exit(1)
 
     d       = deadline_days(submit_time, deadline)
     penalty = 0.95 ** (1 + d)
     score   = round(MAX_SCORE * penalty, 2) if beat else 0.0
-    formula = f"35 × 0.95^(1+{d}) = {score:.2f}"
+    formula = f"28 × 0.95^(1+{d}) = {score:.2f}"
 
     print(f"""
 ╔══════════════════════════════════════════╗
@@ -82,15 +82,14 @@ def main():
 ╠══════════════════════════════════════════╣
 ║  mean_time_per_session:                  ║
 ║    effect_pct: {effect_pct:+.2f}%{"":<22}║
-║    significant: {"✅ Да" if significant else "❌ Нет":<27}║
-║    Победил контроль: {"✅ Да" if beat else "❌ Нет":<22}║
+║    significant: {"OK" if significant else "NO":<27}║
+║    Победил контроль: {"OK" if beat else "NO":<22}║
 ╠══════════════════════════════════════════╣
 ║  Дедлайн (d): {"вовремя" if d==-1 else f"+{d} сут.":<28}║
 ║  Множитель:   {penalty:<28.4f}║
 ╠══════════════════════════════════════════╣
 ║  БАЛЛ: {score:.1f} / {MAX_SCORE:<34}║
 ║  {formula:<42}║
-║  ⚠️  Плагиат (k) проверяется вручную      ║
 ╚══════════════════════════════════════════╝
 """)
 
@@ -108,7 +107,7 @@ def main():
     }
     with open("score_result.json", "w") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
-    print("💾 score_result.json")
+    print("score_result.json")
     sys.exit(0 if beat else 1)
 
 
