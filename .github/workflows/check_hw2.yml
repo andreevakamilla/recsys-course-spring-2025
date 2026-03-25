@@ -106,7 +106,7 @@ jobs:
         run: |
           python course/checker/score.py \
             --pr-url   "${{ github.event.pull_request.html_url }}" \
-            --deadline "${{ vars.HW2_DEADLINE }}" \
+            --deadline "2026-03-30T23:59:00+03:00"\
             --ab-result "${{ github.workspace }}/results/run1/ab_result.json" \
             --token    "$GITHUB_TOKEN" \
             || true
