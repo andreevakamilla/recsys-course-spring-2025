@@ -12,7 +12,7 @@ def get_effect(ab_path: str) -> dict | None:
         effects = data.get("all_effects", [])
         return next((e for e in effects if e["metric"] == METRIC), None)
     except Exception as e:
-        print(f"  ❌ Ошибка чтения {ab_path}: {e}")
+        print(f"Ошибка чтения {ab_path}: {e}")
         return None
 
 
@@ -29,7 +29,7 @@ def main():
     if e1 is None or e2 is None:
         result = {"ok": False, "error": f"Метрика '{METRIC}' не найдена в ab_result.json"}
         json.dump(result, open(args.output, "w"), indent=2)
-        print(f"  ❌ {result['error']}")
+        print(f"{result['error']}")
         sys.exit(1)
 
     p1         = float(e1["effect_pct"])
@@ -39,11 +39,11 @@ def main():
     ok         = sign_match and delta <= THRESHOLD
 
     if not sign_match:
-        verdict = f"❌ Знаки не совпадают: run1={p1:+.2f}% run2={p2:+.2f}%"
+        verdict = f"Знаки не совпадают: run1={p1:+.2f}% run2={p2:+.2f}%"
     elif delta > THRESHOLD:
-        verdict = f"❌ Расхождение слишком большое: delta={delta:.2f}% > {THRESHOLD}% (порог)"
+        verdict = f"Расхождение слишком большое: delta={delta:.2f}% > {THRESHOLD}% (порог)"
     else:
-        verdict = f"✅ Воспроизводимо: знаки совпадают, delta={delta:.2f}% ≤ {THRESHOLD}%"
+        verdict = f"Воспроизводимо: знаки совпадают, delta={delta:.2f}% ≤ {THRESHOLD}%"
 
     result = {
         "ok":          ok,
